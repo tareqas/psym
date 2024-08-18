@@ -1,0 +1,38 @@
+#!/usr/bin/env php
+<?php
+ini_set('memory_limit', '2048M');
+set_time_limit(0);
+$projectDir = getcwd();
+
+$require_once = function (array $files) {
+    foreach ($files as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+        }
+    }
+};
+
+$require_once([
+    $projectDir.'/vendor/autoload.php',
+    $projectDir.'/config/bootstrap.php',
+    $projectDir.'/src/Kernel.php',
+]);
+
+$kernel = new \App\Kernel('dev', true);
+$kernel->boot();
+
+/** @var Symfony\Component\DependencyInjection\ContainerBuilder $container */
+$container = $kernel->getContainer();
+/** @var Doctrine\Bundle\DoctrineBundle\Registry $doctrine */
+$doctrine = $container->get('doctrine');
+/** @var Doctrine\ORM\EntityManagerInterface $em */
+$em = $doctrine->getManager();
+
+$require_once([
+    __DIR__.'/../vendor/autoload.php',
+]);
+
+$sh = new \Psy\Shell();
+$sh->setScopeVariables(compact('kernel', 'container', 'doctrine', 'em'));
+$sh->add(new \TareqAS\Psym\Command\ListEntitiesCommand());
+$sh->run();

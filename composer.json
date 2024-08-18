@@ -1,0 +1,30 @@
+{
+    "name": "tareqas/psym",
+    "description": "A Symfony REPL based on PsySH",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Tareq Ahamed",
+            "email": "tareq.ahamed@outlook.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TareqAS\\Psym\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "require": {
+        "php": ">=7.2",
+        "psy/psysh": "*"
+    },
+    "replace": {
+        "symfony/console": "*",
+        "symfony/var-dumper": "*"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
