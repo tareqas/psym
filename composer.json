@@ -1,13 +1,15 @@
 {
     "name": "tareqas/psym",
-    "description": "A Symfony REPL based on PsySH",
+    "description": "A PHP/Symfony REPL based on PsySH",
     "type": "library",
+    "keywords": ["symfony", "repl", "console", "shell", "interactive", "psym", "psysh"],
     "authors": [
         {
             "name": "Tareq Ahamed",
             "email": "tareq.ahamed@outlook.com"
         }
     ],
+    "bin": ["bin/psym"],
     "autoload": {
         "psr-4": {
             "TareqAS\\Psym\\": "src/"
@@ -16,15 +18,45 @@
             "src/functions.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "TareqAS\\Psym\\Tests\\": "tests/"
+        },
+        "files": [
+            "tests/Fixtures/TabCompletion/functions.php"
+        ]
+    },
     "require": {
         "php": ">=7.2",
-        "psy/psysh": "*"
+        "ext-json": "*",
+        "ext-tokenizer": "*",
+        "jetbrains/phpstorm-stubs": "@dev",
+        "phpstan/phpdoc-parser": "^1.30",
+        "psy/psysh": "@dev"
     },
-    "replace": {
-        "symfony/console": "*",
-        "symfony/var-dumper": "*"
+    "require-dev": {
+        "doctrine/orm": "^2.19",
+        "friendsofphp/php-cs-fixer": "^3.4",
+        "mockery/mockery": "^1.3",
+        "phpunit/phpunit": "^8.0"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "7.2.34"
+        }
+    },
+    "scripts": {
+        "cs-fixer": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fixer-run": "vendor/bin/php-cs-fixer fix",
+        "test": "vendor/bin/phpunit",
+        "post-install-cmd": [
+            "php src/generate-for-sf.php",
+            "COMPOSER=composer-sf.json composer install"
+        ],
+        "post-update-cmd": [
+            "php src/generate-for-sf.php",
+            "COMPOSER=composer-sf.json composer update"
+        ]
     }
 }

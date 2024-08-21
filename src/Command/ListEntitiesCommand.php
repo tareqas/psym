@@ -6,20 +6,19 @@ use Psy\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use TareqAS\Psym\Helper;
+use TareqAS\Psym\Util\DoctrineEM;
 
 class ListEntitiesCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('lse')
             ->setDescription('Lists all entities managed by Doctrine')
-            ->addArgument('entityName', InputArgument::OPTIONAL, 'Name of the entity', '')
-            ->addOption('search', 's', InputOption::VALUE_REQUIRED, 'Search for entities or a specific entity\'s properties' , '')
+            ->addArgument('entityName', InputArgument::OPTIONAL, 'Entity name', '')
+            ->addArgument('propertyName', InputArgument::OPTIONAL, 'Property name of the entity', '')
         ;
     }
 
@@ -27,66 +26,71 @@ class ListEntitiesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $formatter = $output->getFormatter();
+
         $entityName = $input->getArgument('entityName');
-        $searchTerm = $input->getOption('search');
-        $entities = Helper::getEntities();
-        $prints = [];
+        $propertyName = $input->getArgument('propertyName');
+        $entityFullName = DoctrineEM::findEntityFullName($entityName);
 
-        if ($entityName && !($entityName = Helper::findEntityName($entityName))) {
-            $io->error("Entity '{$input->getArgument('entityName')}' not found");
+        $entities = DoctrineEM::getEntitiesTables();
+        $entityMapping = DoctrineEM::getEntitiesMappings()[$entityFullName] ?? [];
+        $rows = [];
 
-            return 1;
-        }
+        if (!$entityFullName && $entityName) {
+            $headers = ['entity', 'table'];
+            $matches = $this->searchEntities($entities, $entityName);
 
-        if ($entityName && $searchTerm) {
-            $properties = Helper::getProperties($entityName);
-            $matches = $this->searchProperties($properties, $searchTerm);
-            $io->text("$entityName: \n");
-            foreach ($matches as $key => $value) {
-                $formatedKey = $this->highlightMatches($key, $searchTerm, $formatter);
-                $formatedValue = $this->highlightMatches($value, $searchTerm, $formatter);
-                $prints[] = "$formatedKey => $formatedValue";
+            foreach ($matches as $entityMapping => $tableName) {
+                $formattedEntity = $this->highlightMatches($entityMapping, $entityName, $formatter);
+                $formattedTable = $this->highlightMatches($tableName, $entityName, $formatter);
+                $rows[] = [$formattedEntity, $formattedTable];
             }
-        } else if ($searchTerm) {
-            $matches = $this->searchEntities($entities, $searchTerm);
-            foreach ($matches as $entity) {
-                $prints[] = $this->highlightMatches($entity, $searchTerm, $formatter);
+        } elseif ($entityMapping && $propertyName) {
+            $headers = ['property', 'column', 'type', 'default'];
+            $matches = $this->searchProperties($entityMapping['properties'], $propertyName);
+
+            foreach ($matches as $property => $map) {
+                $formattedProperty = $this->highlightMatches($property, $propertyName, $formatter);
+                $formattedColumn = $this->highlightMatches($map['column'], $propertyName, $formatter);
+                $rows[] = [$formattedProperty, $formattedColumn, $map['type'], $map['default']];
             }
-        } else if ($entityName) {
-            $prints[] = $this->highlightMatches($entityName, $searchTerm, $formatter);
+
+            $io->text("<fg=black;bg=green>$entityFullName:</>");
+        } elseif ($entityMapping) {
+            $headers = ['property', 'column', 'type', 'default'];
+
+            foreach ($entityMapping['properties'] as $property => $map) {
+                $rows[] = [$property, $map['column'], $map['type'], $map['default']];
+            }
+
+            $io->text("<fg=black;bg=green>$entityFullName:</>");
         } else {
-            $prints = $entities;
+            $headers = ['entity', 'table'];
+
+            foreach ($entities as $entityName => $tableName) {
+                $rows[] = [$entityName, $tableName];
+            }
         }
 
-        foreach ($prints as $index => $text) {
-            $serial = str_pad($index + 1, strlen(count($prints).''), '0', STR_PAD_LEFT);
-            $io->text($serial.': '.$text);
-        }
-        $io->text("\n");
+        $io->table($headers, $rows);
 
         return 0;
     }
 
-    private function searchEntities($entities, $searchTerm): array
+    private function searchEntities(array $entities, string $searchTerm): array
     {
-        $entities = array_filter($entities, function($entity) use ($searchTerm) {
-            return stripos($entity, $searchTerm) !== false;
-        });
-        sort($entities);
-
-        return $entities;
-    }
-
-    private function searchProperties($properties, $searchTerm): array
-    {
-        $properties = array_filter($properties, function($value, $key) use ($searchTerm) {
-            return stripos($key, $searchTerm) !== false || stripos($value, $searchTerm) !== false;
+        return array_filter($entities, function ($tableName, $entityName) use ($searchTerm) {
+            return false !== stripos($tableName, $searchTerm) || false !== stripos($entityName, $searchTerm);
         }, ARRAY_FILTER_USE_BOTH);
-
-        return $properties;
     }
 
-    private function highlightMatches($subject, $searchTerm, OutputFormatterInterface $formatter): string
+    private function searchProperties(array $properties, string $searchTerm): array
+    {
+        return array_filter($properties, function ($map, $property) use ($searchTerm) {
+            return false !== stripos($property, $searchTerm) || false !== stripos($map['column'], $searchTerm);
+        }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    private function highlightMatches(string $subject, string $searchTerm, OutputFormatterInterface $formatter): string
     {
         $searchTerm = preg_quote($searchTerm, '/');
 

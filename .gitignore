@@ -1,2 +1,7 @@
+.php-cs-fixer.cache
+.phpunit.result.cache
 composer.lock
+composer-sf.json
+composer-sf.lock
 vendor/
+vendor-sf/
