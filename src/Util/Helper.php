@@ -36,9 +36,11 @@ class Helper
         $cloner->setMaxItems(-1);
         $dumper = new HtmlDumper();
 
-        mkdir($filePath = sys_get_temp_dir().'/psym/dump', 0755, true);
-        $filePath = $filePath.'/'.time().'.html';
+        if (!is_dir($filePath = sys_get_temp_dir().'/psym/dump')) {
+            mkdir($filePath, 0755, true);
+        }
 
+        $filePath = $filePath.'/'.time().'.html';
         $output = fopen($filePath, 'w+');
         $dumper->dump($cloner->cloneVar($vars), $output, [
             'maxStringLength' => $config['maxString'] ?? -1,
@@ -55,15 +57,22 @@ class Helper
 
     public static function partialSearch(array $subjects, string $searchTerm): array
     {
-        if (in_array($searchTerm, $subjects)) {
-            return [];
-        }
-
         $result = array_filter($subjects, function ($subject) use ($searchTerm) {
-            return false !== stripos($subject, $searchTerm) && strlen($subject) !== strlen($searchTerm);
+            return false !== stripos($subject, $searchTerm);
         });
 
-        return array_values($result);
+        $positions = [];
+        foreach ($result as $subject) {
+            $position = stripos($subject, $searchTerm);
+            $positions[$subject] = $position;
+        }
+
+        // Sort subjects based on the position of the first match, in ascending order
+        uasort($positions, function ($a, $b) {
+            return $a <=> $b;
+        });
+
+        return array_keys($positions);
     }
 
     public static function stringifyDefaultValue($defaultValue): string

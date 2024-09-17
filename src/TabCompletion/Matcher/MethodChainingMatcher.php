@@ -10,10 +10,8 @@ use TareqAS\Psym\Util\Helper;
 
 class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCombinableMatcher
 {
-    private $input = '';
     private $tokens = [];
     private $supportTokens = [];
-    private $hasEndingSpace = true;
 
     public function hasMatched(array $tokens): bool
     {
@@ -60,8 +58,9 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
     {
         array_shift($tokens);
         $this->tokens = $this->preprocessTokens($tokens);
-        $this->input = $info['line_buffer'];
-        $this->hasEndingSpace = ' ' === substr($info['line_buffer'], -1);
+
+        $input = $info['line_buffer'];
+        $hasEndingSpace = ' ' === substr($info['line_buffer'], -1);
 
         $type = '';
         $identifier = '';
@@ -78,10 +77,10 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
                 // asking function or method signature while writing params, foo(....
                 if ($stack && $this->isLast($index)) {
                     // Adding ")" to this list disrupts other matchers.
-                    if (!in_array(substr($this->input, -1), [' ', '(', '>'])) {
-                        preg_match('/\b(\w+)\b$/', $this->input, $matches);
+                    if (!in_array(substr($input, -1), [' ', '(', '>'])) {
+                        preg_match('/\b(\w+)\b$/', $input, $matches);
 
-                        return [$matches[1] ?? $this->input];
+                        return [$matches[1] ?? $input];
                     }
                     ['token' => $token, 'type' => $type] = array_pop($stack);
                     $suggestions = $this->getSuggestions($token, $type, true);
@@ -91,7 +90,7 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
 
             if (in_array($token[0], $this->supportTokens)) {
                 if ($this->isLast($index)) {
-                    $suggestions = $this->getSuggestions($token, $type, $this->hasEndingSpace);
+                    $suggestions = $this->getSuggestions($token, $type, $hasEndingSpace);
                     break;
                 }
 
@@ -219,17 +218,18 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
     private function getSuggestions(array $token, ?string $type = null, bool $showDetails = false): array
     {
         $name = T_OBJECT_OPERATOR === $token[0] ? null : $token[1];
+
         if (X_STATIC_METHOD === $token[0]) {
             [$type, $name] = explode('::', $token[1]);
         }
 
-        // for function, it cannot have type. Otherwise, foo from A\B::foo() will check global function foo()
-        if (!$type && function_exists($name)) {
-            return $this->getSuggestionsForFunction($name, $showDetails);
+        if ($type && $suggestions = $this->getSuggestionsForClass($type, $name, $showDetails)) {
+            return $suggestions;
         }
 
-        if ($type) {
-            return $this->getSuggestionsForClass($type, $name, $showDetails);
+        // for function, it cannot have type. Otherwise, foo from A\B::foo() will check global function foo()
+        if (!$type && $suggestions = $this->getSuggestionsForFunction($name, $showDetails)) {
+            return $suggestions;
         }
 
         return [];
@@ -244,12 +244,11 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
             return [];
         }
 
-        if (in_array(strtolower($functionName), $functions) && !$showDetails) {
-            $suggestions = ["$functionName()"];
-        } elseif (in_array(strtolower($functionName), $functions) && $function = Reflection::getFunction($functionName)) {
+        $functions = Helper::partialSearch($functions, $functionName);
+        $suggestions = array_map(function ($function) { return "$function()"; }, $functions);
+
+        if ($showDetails && $function = Reflection::getFunction($functionName)) {
             $suggestions = Paint::docAndSignature($function['doc'], $function['signature']);
-        } else {
-            $suggestions = Helper::partialSearch($functions, $functionName);
         }
 
         return $suggestions;
@@ -264,28 +263,24 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
         $methods = array_map(function ($class) {
             return $class['name'];
         }, array_merge($class['staticMethods'], $class['methods']));
+
         $properties = array_map(function ($property) {
             return $property['name'];
         }, array_merge($class['staticProperties'], $class['properties']));
 
         if (!$propOrMethodName) {
-            $methods = array_map(function ($method) {
-                return "$method()";
-            }, $methods);
-            $suggestions = array_merge($methods, $properties);
-        } elseif (in_array($propOrMethodName, $methods) && !$showDetails) {
-            $suggestions = ["$propOrMethodName()"];
-        } elseif (in_array($propOrMethodName, $properties) && !$showDetails) {
-            $suggestions = [$propOrMethodName];
-        } elseif ($item = Reflection::getClassItemFromType($type, $propOrMethodName)) {
+            $methods = array_map(function ($method) { return "$method()"; }, $methods);
+
+            return array_merge($methods, $properties);
+        }
+
+        $methods = Helper::partialSearch($methods, $propOrMethodName);
+        $methods = array_map(function ($method) { return "$method()"; }, $methods);
+        $properties = Helper::partialSearch($properties, $propOrMethodName);
+        $suggestions = array_merge($methods, $properties);
+
+        if ($showDetails && $item = Reflection::getClassItemFromType($type, $propOrMethodName)) {
             $suggestions = Paint::docAndSignature($item['doc'], $item['signature']);
-        } else {
-            $methods = Helper::partialSearch($methods, $propOrMethodName);
-            $methods = array_map(function ($method) {
-                return "$method()";
-            }, $methods);
-            $properties = Helper::partialSearch($properties, $propOrMethodName);
-            $suggestions = array_merge($methods, $properties);
         }
 
         return $suggestions;

@@ -1,8 +1,7 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in(['bin', 'src', 'tests'])
-    ->notPath('Fixtures')
+    ->in(['bin', 'src'])
 ;
 
 $config = new PhpCsFixer\Config();

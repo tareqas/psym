@@ -21,7 +21,7 @@ class AutoCompleterTest extends TestCase
     /**
      * @dataProvider classesInput
      */
-    public function testClassesCompletion(string $line, array $expected, string $name = null)
+    public function testClassesCompletion(string $line, array $expected, int $point = 0)
     {
         $context = new Context();
 
@@ -30,7 +30,7 @@ class AutoCompleterTest extends TestCase
         ];
 
         $matchers = [
-            new \TareqAS\Psym\TabCompletion\Matcher\SqlFunctionMatcher(),
+            new \TareqAS\Psym\TabCompletion\Matcher\SqlDqlMatcher(),
             new \TareqAS\Psym\TabCompletion\Matcher\MethodChainingMatcher(),
             new \Psy\TabCompletion\Matcher\CommandsMatcher($commands),
         ];
@@ -47,13 +47,17 @@ class AutoCompleterTest extends TestCase
 
         $mock = Mockery::mock('alias:'.DoctrineEM::class);
         $mock->shouldReceive('getTables')
-            ->andReturn(['table1', 'table2', 'table3']);
+            ->andReturn(['table', 'table_2', 'table_3']);
         $mock->shouldReceive('getColumns')
-            ->andReturn(['c1', 'c2', 'c3']);
+            ->andReturn(['col', 'col_2', 'col_3']);
+        $mock->shouldReceive('getEntities')
+            ->andReturn(['App\Entity\Table', 'App\Entity\Table2', 'App\Entity\Table3']);
+        $mock->shouldReceive('getProperties')
+            ->andReturn(['prop', 'prop2', 'prop3']);
 
         $code = $tabCompletion->processCallback('', 0, [
            'line_buffer' => $line,
-           'point' => 0,
+           'point' => $point,
            'end' => \strlen($line),
         ]);
 
@@ -64,7 +68,7 @@ class AutoCompleterTest extends TestCase
     {
         return [
             /* MethodChainingMatcher */
-            ['$tmp = foo', ['foo()']],
+            ['$tmp = foo', ['foo()', 'tareqas\psym\tests\fixtures\tabcompletion\funcfoo()']],
 
             ['foo ', [$this->getDocAndSignature('foo'), '']],
             ['foo(', [$this->getDocAndSignature('foo'), '']],
@@ -78,7 +82,7 @@ class AutoCompleterTest extends TestCase
 
             // It should display both 'union' and 'unionDoc'. However, it currently only displays 'union'.
             // ['foo()->union', ['union()', 'unionDoc()']],
-            ['foo()->bar', ['bar()']],
+            ['foo()->bar', ['bar()', '_bar']],
             ['foo()->ba', ['bar()', 'baz()', '_bar', '_baz']],
 
             ['foo()->noReturn() ', [$this->getDocAndSignature('noReturn'), '']],
@@ -87,8 +91,8 @@ class AutoCompleterTest extends TestCase
             ['foo()->bar()->', ['foo()', 'fooBar()', 'fooDocBar()']],
             ['foo()->bar->', ["\n ** Invalid method closing: foo()->[37;41mbar[39;49m->\n", '']],
 
-            ['mi', ['']],
-            ['min', ['min()']],
+            ['foo', ['foo()', 'tareqas\psym\tests\fixtures\tabcompletion\funcfoo()']],
+            ['funcfoo', ['tareqas\psym\tests\fixtures\tabcompletion\funcfoo()']],
             ['min() ', [$this->getDocAndSignature('min'), '']],
             ['\TareqAS\Psym\Tests\Fixtures\TabCompletion\funcFoo()->_bar->', ['foo()', 'fooBar()', 'fooDocBar()']],
             ['TareqAS\Psym\Tests\Fixtures\TabCompletion\funcFoo()->_baz->', ['foo()', 'fooBaz()', 'fooDocBaz()']],
@@ -104,22 +108,28 @@ class AutoCompleterTest extends TestCase
             ['$foo->intersectionDoc()->', ['foo()']],
             ['$foo->bar()->foo() ', [$this->getDocAndSignature('inheritdoc'), '']],
 
-            /* SqlFunctionMatcher */
-            ['sql(', SqlParser::$keywordsStarting],
-            ['sql(\'selec', ['select']],
-            ['sql("selec', ['select']],
-            ['sql(`selec', ['select']],
-            ['sql("select * from', ['table1', 'table2', 'table3']],
-            ['sql("select * from tab', ['table1', 'table2', 'table3']],
-            ['sql("select t1. from table1 t1', ['t1.c1', 't1.c2', 't1.c3']],
-            ['sql("select t1.c from table1 t1', ['t1.c1', 't1.c2', 't1.c3']],
-            ['sql("select t1. from table1 t1 join table2 t2 on t2. = t1.c1', ['t1.c1', 't1.c2', 't1.c3', 't2.c1', 't2.c2', 't2.c3']],
-            ['sql("select t1.c1 from table1 t1', ['t1']],
-            ['sql("select t1.c1 from table1 t1 ', SqlParser::$keywords],
-            ['sql("select t1.c1 from table1 t1 jo', ['join']],
+            /* SqlDqlMatcher */
             ['sql()', ['sql()']],
-            ['sql("select *, (select t2.c2 from table2 t2 limit 1) from table1")', ['sql("select *, (select t2.c2 from table2 t2 limit 1) from table1")']],
-            ['sql("invalid sql', ['table1', 'table2', 'table3']],
+            ['sql(', SqlParser::$keywordsStarting],
+            ['sql(`se', ['select', 'set', 'as', 'asc', 'is', 'case', 'desc', 'distinct', 'insert', 'constraint', 'exists', 'values', 'database'], strlen('sql(`e')],
+            ['sql(\'selec', ['select'], strlen('sql(\'selec')],
+            ['sql("selec', ['select'], strlen('sql("selec')],
+            ['sql(`selec', ['select'], strlen('sql(`selec')],
+            ['sql("select * from ', ['table', 'table_2', 'table_3'], strlen('sql("select * from ')],
+            ['sql("select * from tab', ['table', 'table_2', 'table_3'], strlen('sql("select * from tab')],
+            ['sql("select * from table', ['table', 'table_2', 'table_3'], strlen('sql("select * from table')],
+            ['sql("select t1. from table t1', ['t1.col', 't1.col_2', 't1.col_3'], strlen('sql("select t1.')],
+            ['sql("select t1.col from table t1', ['t1.col', 't1.col_2', 't1.col_3'], strlen('sql("select t1.col')],
+            ['sql("select t1.col from table t1 jo', ['join'], strlen('sql("select t1.col from table t1 jo')],
+            ['sql("select t1.col from table t1 join ', ['table', 'table_2', 'table_3'], strlen('sql("select t1.col from table t1 join ')],
+            ['sql("select t1. from table t1 join table_2 t2 on t2. = t1.col', ['t1.col', 't1.col_2', 't1.col_3'], strlen('sql("select t1.')],
+            ['sql("select t1. from table t1 join table_2 t2 on t2. = t1.col', ['t2.col', 't2.col_2', 't2.col_3'], strlen('sql("select t1. from table t1 join table_2 t2 on t2.')],
+            ['sql("select t1.col from table t1', SqlParser::$keywords, strlen('sql("select t1.col ')],
+            ['sql("select t1.col from table t1', SqlParser::$keywords, strlen('sql("select t1.col from table ')],
+            ['sql("select t1.col from table t1 ', SqlParser::$keywords, strlen('sql("select t1.col from table t1 ')],
+            ['sql("select *, (select t2.col_2 from table_2 t2 limit 1) from table")', ['t2.col', 't2.col_2', 't2.col_3'], strlen('sql("select *, (select t2.')],
+            ['sql("invalid sintex', ['sintex'], strlen('sql("invalid sintex')],
+            ['dql("select from ', ['App\Entity\Table', 'App\Entity\Table2', 'App\Entity\Table3'], strlen('dql("select from ')],
         ];
     }
 

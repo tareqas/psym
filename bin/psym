@@ -6,7 +6,7 @@ set_time_limit(0);
 
 $prevHandler = set_error_handler(function (int $errNo, string $errstr) use (&$prevHandler): bool {
     if ($errNo === E_USER_ERROR && strpos($errstr, 'Your Composer dependencies require a PHP version') !== false) {
-        $message = 'If you have multiple PHP versions installed on your machine, install "tareqas/psym" on the lowest version. It supports PHP >= 7.2';
+        $message = 'If you have multiple PHP versions installed on your machine, install "tareqas/psym" globally on the lowest version. It supports PHP >= 7.2';
         echo "\e[41m\e[97m$message\e[0m\n\n";
         die();
     }
@@ -14,15 +14,19 @@ $prevHandler = set_error_handler(function (int $errNo, string $errstr) use (&$pr
     return null !== $prevHandler ? $prevHandler(...func_get_args()) : false;
 });
 
-$autoloaderFileUser = getcwd().'/vendor/autoload.php';
-$autoloaderFileSf = __DIR__.'/../vendor-sf/autoload.php';
-$autoloaderFileDefault = __DIR__.'/../vendor/autoload.php';
+$autoloaderUserFile = getcwd().'/vendor/autoload.php';
+$autoloaderSfFile = __DIR__.'/../vendor-sf/autoload.php';
+$autoloaderSf7File = __DIR__.'/../vendor-sf7/autoload.php';
+$autoloaderDefaultFile = __DIR__.'/../vendor/autoload.php';
+require __DIR__.'/../src/SFChecker.php';
 
-if (file_exists($autoloaderFileUser)) {
-    $autoloaderUser = require $autoloaderFileUser;
-    $autoloaderSf = require $autoloaderFileSf;
+$sfChecker = new \TareqAS\Psym\SFChecker(getcwd());
+
+if (file_exists($autoloaderUserFile)) {
+    $autoloaderUser = require $autoloaderUserFile;
+    $autoloaderSf = require $sfChecker->isSymfony7() ? $autoloaderSf7File : $autoloaderSfFile;
 } else {
-    $autoloaderDefault = require $autoloaderFileDefault;
+    $autoloaderDefault = require $autoloaderDefaultFile;
 }
 restore_error_handler();
 
@@ -32,18 +36,18 @@ $shell = function () {
     return new \Psy\Shell($config);
 };
 
-$sf = new \TareqAS\Psym\SFLoader(getcwd());
+$sfLoader = new \TareqAS\Psym\SFLoader(getcwd());
 
-if ($sf->isSymfonyApp() && $sf->getKernelInstance()) {
-    [$kernel, $container, $doctrine, $em] = $sf->getUsefulServices();
-    $commands = $sf->getAllCommands();
+if ($sfChecker->isSymfonyApp() && $sfLoader->getKernelInstance()) {
+    [$kernel, $container, $doctrine, $em] = $sfLoader->getUsefulServices();
+    $commands = $sfLoader->getAllCommands();
     array_unshift($commands, new \TareqAS\Psym\Command\ListEntitiesCommand());
 
     $sh = $shell();
     $sh->setScopeVariables(compact('kernel', 'container', 'doctrine', 'em'));
     $sh->addCommands($commands);
     $sh->addMatchers([
-        new \TareqAS\Psym\TabCompletion\Matcher\SqlFunctionMatcher(),
+        new \TareqAS\Psym\TabCompletion\Matcher\SqlDqlMatcher(),
         new \TareqAS\Psym\TabCompletion\Matcher\MethodChainingMatcher(),
     ]);
     $sh->run();
@@ -54,7 +58,7 @@ if ($sf->isSymfonyApp() && $sf->getKernelInstance()) {
     }
 
     if (!isset($autoloaderDefault)) {
-        require $autoloaderFileDefault;
+        require $autoloaderDefaultFile;
     }
 
     $sh = $shell();

@@ -40,7 +40,7 @@ SQL;
             ['table' => 'table7', 'alias' => 't7'],
         ];
 
-        $parser = new SqlParser($sql, 'SQL');
+        $parser = new SqlParser($sql, 'sql');
         $tables = $parser->getTables();
 
         self::assertSame($expected, $tables);
@@ -89,7 +89,7 @@ DQL;
         $mock->shouldReceive('getEntitiesMappings')
             ->andReturn($getEntitiesMappings);
 
-        $parser = new SqlParser($sql, 'DQL');
+        $parser = new SqlParser($sql, 'dql');
         $tables = $parser->getTables();
 
         self::assertSame($expected, $tables);

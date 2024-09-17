@@ -19,20 +19,6 @@ class SFLoader
         $this->projectDir = $projectDir;
     }
 
-    public function isSymfonyApp(): bool
-    {
-        if (!file_exists($composer = $this->projectDir.'/composer.json')) {
-            return false;
-        }
-
-        $composer = json_decode(file_get_contents($composer), true);
-        if (!isset($composer['require']['symfony/framework-bundle'])) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getUsefulServices(): array
     {
         if ($this->usefulServices) {
@@ -125,7 +111,10 @@ if (\$app instanceof \Closure) {
 }
 die();
 PHP;
-        mkdir($filePath = sys_get_temp_dir().'/psym', 0755, true);
+        if (!is_dir($filePath = sys_get_temp_dir().'/psym')) {
+            mkdir($filePath, 0755, true);
+        }
+
         file_put_contents($filepath = $filePath.'/boot.php', $script);
         $output = shell_exec('php '.$filepath);
 

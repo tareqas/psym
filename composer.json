@@ -1,6 +1,6 @@
 {
     "name": "tareqas/psym",
-    "description": "A PHP/Symfony REPL based on PsySH",
+    "description": "A REPL for Symfony and PHP",
     "type": "library",
     "keywords": ["symfony", "repl", "console", "shell", "interactive", "psym", "psysh"],
     "authors": [
@@ -32,7 +32,7 @@
         "ext-tokenizer": "*",
         "jetbrains/phpstorm-stubs": "@dev",
         "phpstan/phpdoc-parser": "^1.30",
-        "psy/psysh": "@dev"
+        "psy/psysh": "^0.11"
     },
     "require-dev": {
         "doctrine/orm": "^2.19",
@@ -43,7 +43,7 @@
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "7.2.34"
+            "php": "7.2.99"
         }
     },
     "scripts": {
@@ -51,12 +51,18 @@
         "cs-fixer-run": "vendor/bin/php-cs-fixer fix",
         "test": "vendor/bin/phpunit",
         "post-install-cmd": [
-            "php src/generate-for-sf.php",
-            "COMPOSER=composer-sf.json composer install"
+            "@php src/generate.php",
+            "@putenv COMPOSER=composer-sf.json",
+            "@composer install",
+            "@putenv COMPOSER=composer-sf7.json",
+            "@composer install"
         ],
         "post-update-cmd": [
-            "php src/generate-for-sf.php",
-            "COMPOSER=composer-sf.json composer update"
+            "@php src/generate.php",
+            "@putenv COMPOSER=composer-sf.json",
+            "@composer update",
+            "@putenv COMPOSER=composer-sf7.json",
+            "@composer update"
         ]
     }
 }

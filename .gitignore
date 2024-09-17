@@ -3,5 +3,8 @@
 composer.lock
 composer-sf.json
 composer-sf.lock
+composer-sf7.json
+composer-sf7.lock
 vendor/
 vendor-sf/
+vendor-sf7/

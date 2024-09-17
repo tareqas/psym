@@ -10,10 +10,15 @@ The `lse` command and `table()`, `sql()` functions are available when **Doctrine
 Function `html()` and features like `auto-completion`, `auto-suggestion`, and `doc-and-signature` work **universally**.
 
 ## Installation
-You must install pSym **globally**. If you have multiple PHP versions installed on your machine, install it on the
-**lowest** version. It supports PHP `>=7.2`.
+You need to install pSym **globally**. If you have multiple PHP versions on your machine, install it on the
+**lowest** version. It supports PHP versions `>=7.2` and works with Symfony versions `4`, `5`, `6`, and `7`.
 ```shell
 composer global require tareqas/psym
+```
+And make sure that Composer’s global bin directory is included in your system’s PATH. You can find the global bin
+directory with the following command:
+```shell
+composer global config home
 ```
 
 ### Commands
@@ -70,21 +75,21 @@ html($var, [
     'collectionSize' => 1, # or 'size' - cut the Doctrine association collection to this specific size
     'maxString' => -1 # # cut the overlong string to this specific size
 ])
+# -1 implies that there is no limit.
 ```
-** -1 means no limit
 
 ### table()
 ```php
-function table(string $table, ?string $alias = null): EntityRepository|QueryBuilder
+function table(string $table, ?string $alias = null): EntityRepository|QueryBuilder|void
 ```
 The `table()` function retrieves a repository for a given entity. It returns a `Doctrine\ORM\EntityRepository`
 if no alias is provided, or a `Doctrine\ORM\QueryBuilder` if an alias is specified.
 
 ### sql()
 ```php
-function sql(string $sql): array
+function sql(string $sql, array $params = []): array|void
 ```
-The `sql()` function executes raw SQL queries and returns results as an associative array.
+The `sql()` function executes raw SQL queries and returns the result as an associative array.
 Doctrine is required to use this feature.
 ```shell
 # press TAB to display all available tables
@@ -92,6 +97,20 @@ sql('select * from '
 # press TAB to display all available columns in the 'cart' table
 sql('select c. from cart c'
 ```
+
+### dql()
+```php
+function dql(string $dql, array $params = []): array|void
+```
+The `dql()` function allows you to execute DQL queries and also returns the result as an associative array.
+```shell
+# press TAB to display all available entities
+dql('select * from '
+# press TAB to display all available properties in the 'Cart' entity
+sql('select c. from App\Entity\Cart c'
+```
+> **Limitation:** Auto-completion may have limitations with entity classes due to backslashes (\\).
+> Other features work as expected.
 
 ## And more
 To unlock the full potential, explore the [PsySH documentation](https://psysh.org/#docs). pSym is built on top of PsySH.

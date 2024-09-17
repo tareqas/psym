@@ -3,8 +3,7 @@
 namespace TareqAS\Psym\Util;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
-use Doctrine\ORM\Proxy\Proxy;
+use Doctrine\Persistence\Proxy;
 
 class DoctrineProxy
 {
@@ -80,7 +79,7 @@ class DoctrineProxy
         $property->setAccessible(true);
 
         $association = $property->getValue($collection);
-        $association['fetch'] = ClassMetadataInfo::FETCH_EXTRA_LAZY;
+        $association['fetch'] = 4; // FETCH_EXTRA_LAZY;
 
         $property->setValue($collection, $association);
     }
