@@ -3,6 +3,7 @@
     "description": "A REPL for Symfony and PHP",
     "type": "library",
     "keywords": ["symfony", "repl", "console", "shell", "interactive", "psym", "psysh"],
+    "license": "MIT",
     "authors": [
         {
             "name": "Tareq Ahamed",

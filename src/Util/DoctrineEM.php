@@ -108,7 +108,7 @@ class DoctrineEM
                 $columnNames = isset($mapping['joinColumns']) ? array_map(function ($map) {
                     return $map['name'];
                 }, $mapping['joinColumns']) : [];
-                $mappedBy = $mapping['mappedBy'] ? "::\${$mapping['mappedBy']}" : '';
+                $mappedBy = isset($mapping['mappedBy']) ? "::\${$mapping['mappedBy']}" : '';
                 $type = (self::$associations[$mapping['type']] ?? '')." ({$mapping['targetEntity']}$mappedBy)";
 
                 $info['properties'][$property] = [

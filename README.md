@@ -10,16 +10,18 @@ The `lse` command and `table()`, `sql()` functions are available when **Doctrine
 Function `html()` and features like `auto-completion`, `auto-suggestion`, and `doc-and-signature` work **universally**.
 
 ## Installation
-You need to install pSym **globally**. If you have multiple PHP versions on your machine, install it on the
-**lowest** version. It supports PHP versions `>=7.2` and works with Symfony versions `4`, `5`, `6`, and `7`.
+To install pSym, create a project using `composer create-project` in your preferred location. If you have
+multiple PHP versions on your machine, install it on the **lowest** version. It supports PHP versions `>=7.2`
+and works with Symfony versions `4`, `5`, `6`, and `7`.
 ```shell
-composer global require tareqas/psym
+# The home directory might be an ideal place to install
+cd ~
+composer create-project tareqas/psym psym
 ```
-And make sure that Composer’s global bin directory is included in your system’s PATH. You can find the global bin
-directory with the following command:
-```shell
-composer global config home
-```
+Next, add the `your-psym-installation-path/psym/bin/` directory to your system's PATH, so you can run the
+`psym` command directly from your shell.
+
+> **Warning:** Do not install it as a global or local package; it won't work.
 
 ### Commands
 ```shell
