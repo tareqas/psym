@@ -32,6 +32,8 @@ list
 ```
 
 ### Auto-complete and Auto-suggestion
+![auto-completion](docs/images/auto-completion.gif)
+
 To get suggestions, press the `TAB` key.
 
 > **Note:** Sometimes you may need to press `SPACE` first and then `TAB`.
@@ -46,6 +48,8 @@ $kernel->getBund
 ```
 
 ### Documentation and Signature
+![documentation and signature](docs/images/doc-and-html.gif)
+
 You can view PHPDoc documentation and signature for `function`, `property`, and `method`.
 ```shell
 # press TAB to display the phpDoc and signature for getBundle
@@ -53,6 +57,8 @@ $kernel->getBundle
 ```
 
 ### lse
+![lse](docs/images/lse.gif)
+
 The `lse` command lists all entities managed by Doctrine.
 ```shell
 # list of of all matching tables
@@ -88,6 +94,8 @@ The `table()` function retrieves a repository for a given entity. It returns a `
 if no alias is provided, or a `Doctrine\ORM\QueryBuilder` if an alias is specified.
 
 ### sql()
+![sql](docs/images/sql.gif)
+
 ```php
 function sql(string $sql, array $params = []): array|void
 ```
@@ -101,6 +109,8 @@ sql('select c. from cart c'
 ```
 
 ### dql()
+![dql](docs/images/dql.gif)
+
 ```php
 function dql(string $dql, array $params = []): array|void
 ```
