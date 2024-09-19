@@ -13,6 +13,7 @@ class SFLoader
     private $projectDir;
     private $usefulServices;
     private $kernelInstance;
+    private $nodeVisitor;
 
     public function __construct(string $projectDir)
     {
@@ -102,28 +103,24 @@ class SFLoader
 
     private function hasRuntimeBeenUsedInConsole(string $console): bool
     {
-        $id = '###FOUND###';
-        $script = <<<PHP
-<?php
-\$app = require '$console';
-if (\$app instanceof \Closure) {
-    echo '$id';
-}
-die();
-PHP;
-        if (!is_dir($filePath = sys_get_temp_dir().'/psym')) {
-            mkdir($filePath, 0755, true);
-        }
+        $nodeVisitor = $this->getVisitedNodeVisitor($console);
 
-        file_put_contents($filepath = $filePath.'/boot.php', $script);
-        $output = shell_exec('php '.$filepath);
-
-        return false !== strpos($output, $id);
+        return $nodeVisitor->doesItReturnClosure;
     }
 
     private function getKernelClass(string $console): ?string
     {
-        $code = file_get_contents($console);
+        $nodeVisitor = $this->getVisitedNodeVisitor($console);
+
+        return $nodeVisitor->kernelClass;
+    }
+
+    private function getVisitedNodeVisitor(string $file): NodeVisitor
+    {
+        if ($this->nodeVisitor) {
+            return $this->nodeVisitor;
+        }
+        $code = file_get_contents($file);
 
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse($code);
@@ -132,7 +129,7 @@ PHP;
         $traverser->addVisitor($nodeVisitor);
         $traverser->traverse($ast);
 
-        return $nodeVisitor->kernelClass;
+        return $this->nodeVisitor = $nodeVisitor;
     }
 
     private function displayWarning(string $message): void

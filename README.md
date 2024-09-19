@@ -5,14 +5,13 @@ A REPL for Symfony and PHP
 features such as access to variables like `$kernel`, `$container`, `$doctrine`, and `$em`.
 Additionally, all registered **project commands** become accessible as well.
 
-The `lse` command and `table()`, `sql()` functions are available when **Doctrine** is installed.
+The `lse` command and `table()`, `sql()`, and `dql()` functions are available when **Doctrine** is installed.
 
 Function `html()` and features like `auto-completion`, `auto-suggestion`, and `doc-and-signature` work **universally**.
 
 ## Installation
-To install pSym, create a project using `composer create-project` in your preferred location. If you have
-multiple PHP versions on your machine, install it on the **lowest** version. It supports PHP versions `>=7.2`
-and works with Symfony versions `4`, `5`, `6`, and `7`.
+To install it, create a project using `composer create-project` in your preferred location. It supports
+PHP versions `>=7.2` and works with Symfony versions `4`, `5`, `6`, and `7`.
 ```shell
 # The home directory might be an ideal place to install
 cd ~
@@ -32,7 +31,7 @@ list
 ```
 
 ### Auto-complete and Auto-suggestion
-![auto-completion](docs/images/auto-completion.gif)
+![auto-completion](https://raw.githubusercontent.com/tareqas/psym/d4a4b9064035e4eb36e95e6a09a6e0de3c22ba9c/docs/images/auto-completion.gif)
 
 To get suggestions, press the `TAB` key.
 
@@ -48,7 +47,7 @@ $kernel->getBund
 ```
 
 ### Documentation and Signature
-![documentation and signature](docs/images/doc-and-html.gif)
+![documentation and signature](https://raw.githubusercontent.com/tareqas/psym/d4a4b9064035e4eb36e95e6a09a6e0de3c22ba9c/docs/images/doc-and-html.gif)
 
 You can view PHPDoc documentation and signature for `function`, `property`, and `method`.
 ```shell
@@ -57,7 +56,7 @@ $kernel->getBundle
 ```
 
 ### lse
-![lse](docs/images/lse.gif)
+![lse](https://raw.githubusercontent.com/tareqas/psym/d4a4b9064035e4eb36e95e6a09a6e0de3c22ba9c/docs/images/lse.gif)
 
 The `lse` command lists all entities managed by Doctrine.
 ```shell
@@ -81,9 +80,9 @@ You can fine-tune the dump by providing additional options in the last parameter
 html($var, [
     'nestedLevel' => -1, # or 'level' - how deep it should go to instantiate doctrine proxy object
     'collectionSize' => 1, # or 'size' - cut the Doctrine association collection to this specific size
-    'maxString' => -1 # # cut the overlong string to this specific size
+    'maxString' => -1 # cut the overlong string to this specific size
 ])
-# -1 implies that there is no limit.
+# -1 implies no limit.
 ```
 
 ### table()
@@ -94,7 +93,7 @@ The `table()` function retrieves a repository for a given entity. It returns a `
 if no alias is provided, or a `Doctrine\ORM\QueryBuilder` if an alias is specified.
 
 ### sql()
-![sql](docs/images/sql.gif)
+![sql](https://raw.githubusercontent.com/tareqas/psym/d4a4b9064035e4eb36e95e6a09a6e0de3c22ba9c/docs/images/sql.gif)
 
 ```php
 function sql(string $sql, array $params = []): array|void
@@ -109,7 +108,7 @@ sql('select c. from cart c'
 ```
 
 ### dql()
-![dql](docs/images/dql.gif)
+![dql](https://raw.githubusercontent.com/tareqas/psym/d4a4b9064035e4eb36e95e6a09a6e0de3c22ba9c/docs/images/dql.gif)
 
 ```php
 function dql(string $dql, array $params = []): array|void

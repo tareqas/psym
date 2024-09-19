@@ -4,16 +4,6 @@
 ini_set('memory_limit', '1024M');
 set_time_limit(0);
 
-$prevHandler = set_error_handler(function (int $errNo, string $errstr) use (&$prevHandler): bool {
-    if ($errNo === E_USER_ERROR && strpos($errstr, 'Your Composer dependencies require a PHP version') !== false) {
-        $message = 'If you have multiple PHP versions installed on your machine, install "tareqas/psym" globally on the lowest version. It supports PHP >= 7.2';
-        echo "\e[41m\e[97m$message\e[0m\n\n";
-        die();
-    }
-
-    return null !== $prevHandler ? $prevHandler(...func_get_args()) : false;
-});
-
 $autoloaderUserFile = getcwd().'/vendor/autoload.php';
 $autoloaderSfFile = __DIR__.'/../vendor-sf/autoload.php';
 $autoloaderSf7File = __DIR__.'/../vendor-sf7/autoload.php';
@@ -28,7 +18,6 @@ if (file_exists($autoloaderUserFile)) {
 } else {
     $autoloaderDefault = require $autoloaderDefaultFile;
 }
-restore_error_handler();
 
 $shell = function () {
     $config = new \Psy\Configuration();

@@ -74,14 +74,11 @@ class AutoCompleterTest extends TestCase
             ['foo(', [$this->getDocAndSignature('foo'), '']],
             ['foo($bar', ['bar']], // add extra space at the end 'foo($bar '
             ['foo($bar, baz()->', [$this->getDocAndSignature('foo'), '']],
-            // It should display doc with signature. However, it currently returns the same string because of:
-            // - interference with another matcher, and
-            // - a problem with displaying on the console.
-            ['foo(baz()', ['foo(baz()']],
+            // a problem with displaying on the console.
+            ['foo(baz()', [$this->getDocAndSignature('foo'), '']],
             ['foo(baz() ', [$this->getDocAndSignature('foo'), '']],
 
-            // It should display both 'union' and 'unionDoc'. However, it currently only displays 'union'.
-            // ['foo()->union', ['union()', 'unionDoc()']],
+            ['foo()->union', ['union()', 'unionDoc()']],
             ['foo()->bar', ['bar()', '_bar']],
             ['foo()->ba', ['bar()', 'baz()', '_bar', '_baz']],
 
@@ -109,7 +106,7 @@ class AutoCompleterTest extends TestCase
             ['$foo->bar()->foo() ', [$this->getDocAndSignature('inheritdoc'), '']],
 
             /* SqlDqlMatcher */
-            ['sql()', ['sql()']],
+            ['sql()', [$this->getDocAndSignature('sql'), '']],
             ['sql(', SqlParser::$keywordsStarting],
             ['sql(`se', ['select', 'set', 'as', 'asc', 'is', 'case', 'desc', 'distinct', 'insert', 'constraint', 'exists', 'values', 'database'], strlen('sql(`e')],
             ['sql(\'selec', ['select'], strlen('sql(\'selec')],
@@ -173,6 +170,18 @@ DOC,
 [36mpublic function[39m [31mnoReturn[39m()
 
 DOC,
+            'sql' => <<<'DOC'
+[32m/**
+ * Executes a raw SQL query and returns the result.
+ *
+ * [39m[35m@param[39m[32m string [39m[31m$sql[39m[32m    the SQL query string
+ * [39m[35m@param[39m[32m array  [39m[31m$params[39m[32m an associative array of query parameters
+ *
+ * [39m[35m@return[39m[32m array[]|void
+ */[39m
+[36mfunction[39m [31msql[39m([36mstring [39m[31m$sql[39m, [36marray [39m[31m$params[39m = [])
+
+DOC
         ];
 
         return $docs[$name];

@@ -77,10 +77,8 @@ class MethodChainingMatcher extends AbstractContextAwareMatcher implements NonCo
                 // asking function or method signature while writing params, foo(....
                 if ($stack && $this->isLast($index)) {
                     // Adding ")" to this list disrupts other matchers.
-                    if (!in_array(substr($input, -1), [' ', '(', '>'])) {
-                        preg_match('/\b(\w+)\b$/', $input, $matches);
-
-                        return [$matches[1] ?? $input];
+                    if (preg_match('/\b(\w+)\b$/', $input, $matches)) {
+                        return [$matches[1]];
                     }
                     ['token' => $token, 'type' => $type] = array_pop($stack);
                     $suggestions = $this->getSuggestions($token, $type, true);
