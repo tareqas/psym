@@ -39,18 +39,23 @@
         "doctrine/orm": "^2.19",
         "friendsofphp/php-cs-fixer": "^3.4",
         "mockery/mockery": "^1.3",
-        "phpunit/phpunit": "^8.0"
+        "phpunit/phpunit": "^8.0",
+        "symfony/framework-bundle": "^5.4",
+        "symfony/runtime": "^5.4"
     },
     "config": {
         "sort-packages": true,
         "platform": {
             "php": "7.2.99"
+        },
+        "allow-plugins": {
+            "symfony/runtime": false
         }
     },
     "scripts": {
-        "cs-fixer": "vendor/bin/php-cs-fixer fix --dry-run --diff",
-        "cs-fixer-run": "vendor/bin/php-cs-fixer fix",
-        "test": "vendor/bin/phpunit",
+        "cs-fixer": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fixer-run": "@php vendor/bin/php-cs-fixer fix",
+        "test": "@php vendor/bin/phpunit",
         "post-install-cmd": [
             "@php src/generate.php",
             "@putenv COMPOSER=composer-sf.json",

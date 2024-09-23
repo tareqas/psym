@@ -63,7 +63,7 @@ class SFLoader
                 throw new \RuntimeException('Boot failed: bin/console file not found!');
             }
 
-            if (file_exists($this->projectDir.'/vendor/autoload_runtime.php') && $this->hasRuntimeBeenUsedInConsole($console)) {
+            if (file_exists($this->projectDir.'/vendor/autoload_runtime.php') && $this->doesConsoleHaveRuntime($console)) {
                 $runtime = new SymfonyRuntime(['project_dir' => $this->projectDir]);
                 $app = require $console;
                 [$app, $args] = $runtime->getResolver($app)->resolve();
@@ -101,7 +101,7 @@ class SFLoader
         }
     }
 
-    private function hasRuntimeBeenUsedInConsole(string $console): bool
+    private function doesConsoleHaveRuntime(string $console): bool
     {
         $nodeVisitor = $this->getVisitedNodeVisitor($console);
 

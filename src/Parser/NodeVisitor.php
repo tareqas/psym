@@ -15,7 +15,8 @@ class NodeVisitor extends NodeVisitorAbstract
     public $className = null;
     public $doesItReturnClosure = false;
 
-    public function beforeTraverse(array $nodes) {
+    public function beforeTraverse(array $nodes)
+    {
         $node = end($nodes);
 
         if ($node instanceof Node\Stmt\Return_ && $node->expr instanceof Node\Expr\Closure) {

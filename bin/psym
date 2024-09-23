@@ -22,7 +22,7 @@ if (file_exists($autoloaderUserFile)) {
 $shell = function () {
     $config = new \Psy\Configuration();
     $config->setAutoCompleter(new \TareqAS\Psym\TabCompletion\AutoCompleter());
-    return new \Psy\Shell($config);
+    return new \TareqAS\Psym\Shell($config);
 };
 
 $sfLoader = new \TareqAS\Psym\SFLoader(getcwd());
@@ -33,6 +33,7 @@ if ($sfChecker->isSymfonyApp() && $sfLoader->getKernelInstance()) {
     array_unshift($commands, new \TareqAS\Psym\Command\ListEntitiesCommand());
 
     $sh = $shell();
+    $sh->setKernel($kernel);
     $sh->setScopeVariables(compact('kernel', 'container', 'doctrine', 'em'));
     $sh->addCommands($commands);
     $sh->addMatchers([
