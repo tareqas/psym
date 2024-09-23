@@ -10,6 +10,14 @@ $autoloaderSf7File = __DIR__.'/../vendor-sf7/autoload.php';
 $autoloaderDefaultFile = __DIR__.'/../vendor/autoload.php';
 require __DIR__.'/../src/SFChecker.php';
 
+if (!file_exists($autoloaderSfFile) || !file_exists($autoloaderSf7File)) {
+    $message = "\n\e[41m\e[97mIncorrect Installation!!!\e[0m";
+    $message .= "\nYou need to install it by running \e[1mcomposer create-project tareqas/psym your/preferred/location\e[0m. It cannot be installed as a global or local package.";
+    $message .= "\nsee: https://github.com/tareqas/psym?tab=readme-ov-file#installation\n\n";
+    echo "$message";
+    die();
+}
+
 $sfChecker = new \TareqAS\Psym\SFChecker(getcwd());
 
 if (file_exists($autoloaderUserFile)) {
