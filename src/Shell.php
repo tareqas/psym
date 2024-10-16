@@ -34,7 +34,7 @@ class Shell extends PsyShell
         $this->kernel = $kernel;
     }
 
-    public function reset()
+    public function reset(): void
     {
         if ($this->getKernel()->getContainer()->has('services_resetter')) {
             $this->getKernel()->getContainer()->get('services_resetter')->reset();
