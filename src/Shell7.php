@@ -5,7 +5,7 @@ namespace TareqAS\Psym;
 use Psy\Configuration;
 use Psy\Shell as PsyShell;
 
-class Shell extends PsyShell
+class Shell7 extends PsyShell
 {
     use ShellTrait;
 
@@ -14,7 +14,7 @@ class Shell extends PsyShell
         parent::__construct($config);
     }
 
-    public function reset()
+    public function reset(): void
     {
         if ($this->getKernel()->getContainer()->has('services_resetter')) {
             $this->getKernel()->getContainer()->get('services_resetter')->reset();

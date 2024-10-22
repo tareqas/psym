@@ -28,9 +28,11 @@ if (file_exists($autoloaderUserFile)) {
 }
 
 $shell = function () {
+    global $sfChecker;
     $config = new \Psy\Configuration();
     $config->setAutoCompleter(new \TareqAS\Psym\TabCompletion\AutoCompleter());
-    return new \TareqAS\Psym\Shell($config);
+    $class = $sfChecker->isSymfony7() ? \TareqAS\Psym\Shell7::class : \TareqAS\Psym\Shell::class;
+    return new $class($config);
 };
 
 $sfLoader = new \TareqAS\Psym\SFLoader(getcwd());
