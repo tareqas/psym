@@ -50,6 +50,10 @@ class SFChecker
             return true;
         }
 
+        if (isset($composer['extra']['symfony']['require']) && version_compare($composer['extra']['symfony']['require'], '7.0', '>=')) {
+            return true;
+        }
+
         return false;
     }
 }
